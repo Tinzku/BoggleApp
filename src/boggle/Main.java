@@ -75,13 +75,14 @@ public class Main extends Application {
     private class Tile extends StackPane {
 
         private LetteredDice dice;
+        private Text text;
 
         public Tile(LetteredDice dice) {
             Rectangle border = new Rectangle(50, 50);
             border.setFill(Color.WHITE); // painalluksen feedback muuttuva väri?
             border.setStroke(Color.BLACK);
             this.dice = dice;
-            Text text = new Text(dice.getValue());
+            text = new Text(dice.getValue());
             text.setFont(Font.font(30));
             setAlignment(Pos.CENTER);
             getChildren().addAll(border, text);
@@ -93,6 +94,15 @@ public class Main extends Application {
 
         private void setDice(LetteredDice dice) {
             this.dice = dice;
+        }
+
+        //TODO: edit methods to operate with String values instead of Text-objects
+        public Text getText() {
+            return text;
+        }
+
+        public void setText(Text text) {
+            this.text = text;
         }
     }
 
