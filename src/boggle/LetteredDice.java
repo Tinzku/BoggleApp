@@ -1,4 +1,4 @@
-package sample;
+package boggle;
 
 import java.util.ArrayList;
 import java.util.Random;

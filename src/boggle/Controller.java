@@ -1,4 +1,4 @@
-package sample;
+package boggle;
 
 import javafx.fxml.FXML;
 import javafx.scene.layout.GridPane;
