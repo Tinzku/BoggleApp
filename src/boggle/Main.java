@@ -6,6 +6,7 @@ import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.Button;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
@@ -22,10 +23,11 @@ import java.util.ArrayList;
 
 public class Main extends Application {
 
-    private static int ALLOCATED_ID = 0;
-
+    private int apu = 0;
     private GridPane board;
+    private String[][] boardMatrix;
     private String word = "";
+    private ArrayList<Tile> pressedTiles = new ArrayList<>();
 
     // Initializes the board tiles with dices
     private GridPane initBoard() {
@@ -33,36 +35,26 @@ public class Main extends Application {
         // Creating tiles with dices
         ArrayList<LetteredDice> dices = LetteredDice.configure();
         ArrayList<Tile> tiles = new ArrayList<>();
-        int i = 0;
         for(LetteredDice d: dices) {
             tiles.add(new Tile(d));
-            System.out.print(tiles.get(i).getID());
-            i++;
         }
 
+        // Creating a matrix to assist with word formation
+        boardMatrix = new String[4][4];
         // Creating a GridPane-board
         board = new GridPane();
         board.setPrefSize(300, 300);
         board.setAlignment(Pos.CENTER_LEFT);
 
-        // Vois vähän loopilla optimoida ":D"
-        board.add(tiles.get(0), 0, 0);
-        board.add(tiles.get(1), 0, 1);
-        board.add(tiles.get(2), 0, 2);
-        board.add(tiles.get(3), 0, 3);
-        board.add(tiles.get(4), 1, 0);
-        board.add(tiles.get(5), 1, 1);
-        board.add(tiles.get(6), 1, 2);
-        board.add(tiles.get(7), 1, 3);
-        board.add(tiles.get(8), 2, 0);
-        board.add(tiles.get(9), 2, 1);
-        board.add(tiles.get(10), 2, 2);
-        board.add(tiles.get(11), 2, 3);
-        board.add(tiles.get(12), 3, 0);
-        board.add(tiles.get(13), 3, 1);
-        board.add(tiles.get(14), 3, 2);
-        board.add(tiles.get(15), 3, 3);
-
+        // Adding String values (letters) to matrix and Tiles to GridPane
+        int k = 0;
+        for (int i=0; i < 4; i++) {
+            for (int j=0; j < 4; j++) {
+                tiles.get(k).setPos(i, j);
+                board.add(tiles.get(k), i, j);
+                k++;
+            }
+        }
         return board;
     }
 
@@ -71,6 +63,9 @@ public class Main extends Application {
         Pane root = new Pane();
         root.setPrefSize(600, 300);
         root.getChildren().addAll(initBoard());
+        Button b = new Button("Reset");
+        b.setOnMouseClicked(event -> reset());
+        root.getChildren().add(b);
         return root;
     }
 
@@ -83,6 +78,45 @@ public class Main extends Application {
             t.getDice().roll();
             t.updateText();
         }
+    }
+
+    // Reset
+    private void reset() {
+        ObservableList<Node> nodes = board.getChildren();
+        for (Node n: nodes) {
+            Tile t = (Tile) n;
+            t.resetBorder();
+            pressedTiles.clear();
+        }
+    }
+
+    // Checks if the two letters are adjacent on the board
+    private boolean checkAdjacency() {
+        boolean value = false;
+        int size = pressedTiles.size();
+        if(size <= 1) {
+            System.out.println("Ei tarvi vielä tsekkailla");
+            value = true;
+        } else {
+            // getgetget
+           int x1 = pressedTiles.get(size-2).getPos().getX();
+           int y1 = pressedTiles.get(size-2).getPos().getY();
+           int x2 = pressedTiles.get(size-1).getPos().getX();
+           int y2 = pressedTiles.get(size-1).getPos().getY();
+           System.out.println(x1+" "+x2+" "+y1+" "+y2);
+
+           if(x1 == x2 && (y1+1 == y2 || y1-1 == y2)) { //same x-coordinate
+               System.out.println("On on!");
+               value = true;
+           } else if(y1 == y2 && (x1+1 == x2 || x1-1 == x2)) { //same y-coordinate
+               System.out.println("On on!");
+               value = true;
+           } else {
+               System.out.println("Ei ole!");
+               value = false;
+           }
+        }
+        return value;
     }
 
     @Override
@@ -99,17 +133,16 @@ public class Main extends Application {
      */
     private class Tile extends StackPane {
 
-        protected LetteredDice dice;
+        private LetteredDice dice;
         private Text text;
-        Rectangle border;
-        int ID;
+        private Rectangle border;
+
+        // Saving position data to help adjacency checking
+        private Position pos;
 
         public Tile(LetteredDice dice) {
             this.dice = dice;
-
-            // Numbering tiles for (easy) adjacency checking
-            ID = ALLOCATED_ID;
-            ALLOCATED_ID++;
+            pos = new Position(0, 0);
 
             // Setting border properties
             border = new Rectangle(50, 50);
@@ -124,34 +157,31 @@ public class Main extends Application {
             getChildren().addAll(border, text);
 
             // Event handler for pressing a tile
-            setOnMouseClicked(event -> clickTile(ID));
+            setOnMouseClicked(event -> clickTile(this));
         }
 
-        /**
-         * Chooses/un-chooses the letter to be used in a word
-         * @param ID
-         */
-        //TODO: Currently only changes tile fill value
-        private void clickTile(int ID) {
+        private void clickTile(Tile t) {
             if (border.getFill().equals(Color.WHITE)) {
                 border.setFill(Color.LIGHTBLUE);
-                // shuffle(); // käytin noppien sekottamisen testaukseen
-                word = word + getDice().getValue();
-                System.out.println("Word now: "+word);
+                pressedTiles.add(t);
+                if(checkAdjacency()) {
+                    // lisätään letteri sanaan jos tsekki ok
+                }
             } else {
                 border.setFill(Color.WHITE);
             }
         }
 
-        public LetteredDice getDice() { return dice; }
-        public int getID() { return ID; }
+        private LetteredDice getDice() { return dice; }
+
+        // Resets the color (the state) of the tile
+        public void resetBorder() { border.setFill(Color.WHITE); }
 
         // Updates the Text attribute of the Tile to match dice value
-        public void updateText() { text.setText(dice.getValue()); }
+        private void updateText() { text.setText(dice.getValue()); }
 
-        // Redundant?
-        public Text getText() { return text; }
-        public void setText(Text text) { this.text = text; }
+        private void setPos(int x, int y) { pos.setX(x); pos.setY(y); }
+        private Position getPos() { return pos; }
     }
     public static void main(String[] args) { launch(args); }
 }
