@@ -17,16 +17,14 @@ import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import java.util.ArrayList;
 
+//TODO: Implement game logic and structure
 //TODO: Implement Dictionary
 //TODO: Implement Timer
-//TODO: Implement Word formation out of chosen tiles (letters)
+//TODO: Implement Word formation with StringBuilder (?)
 
 public class Main extends Application {
 
-    private int apu = 0;
     private GridPane board;
-    private String[][] boardMatrix;
-    private String word = "";
     private ArrayList<Tile> pressedTiles = new ArrayList<>();
 
     // Initializes the board tiles with dices
@@ -39,8 +37,6 @@ public class Main extends Application {
             tiles.add(new Tile(d));
         }
 
-        // Creating a matrix to assist with word formation
-        boardMatrix = new String[4][4];
         // Creating a GridPane-board
         board = new GridPane();
         board.setPrefSize(300, 300);
