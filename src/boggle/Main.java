@@ -16,22 +16,25 @@ import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import java.util.ArrayList;
+import java.util.Collections;
 
 //TODO: Implement game logic and structure
 //TODO: Implement Dictionary
 //TODO: Implement Timer
-//TODO: Implement Word formation with StringBuilder (?)
 
 public class Main extends Application {
 
     private GridPane board;
     private ArrayList<Tile> pressedTiles = new ArrayList<>();
+    private StringBuilder word = new StringBuilder();
+    private Scoring score = new Scoring();
 
     // Initializes the board tiles with dices
     private GridPane initBoard() {
 
         // Creating tiles with dices
         ArrayList<LetteredDice> dices = LetteredDice.configure();
+        Collections.shuffle(dices); //shuffling the dice positions
         ArrayList<Tile> tiles = new ArrayList<>();
         for(LetteredDice d: dices) {
             tiles.add(new Tile(d));
@@ -59,10 +62,19 @@ public class Main extends Application {
         Pane root = new Pane();
         root.setPrefSize(600, 300);
         root.getChildren().addAll(initBoard());
-        Button b = new Button("Reset");
-        b.setOnMouseClicked(event -> reset());
-        root.getChildren().add(b);
+        Button reset = new Button("Reset");
+        Button confirm = new Button("Confirm");
+        confirm.setOnMouseClicked(event -> confirm());
+        reset.setOnMouseClicked(event -> reset());
+        root.getChildren().addAll(confirm, reset);
         return root;
+    }
+
+    private void confirm() {
+        //if (isWord()) {
+            score.countScore(word);
+            System.out.println(score.getScore());
+        //} Dictionary check
     }
 
     // Rolls dice in the start of a new round
@@ -83,6 +95,7 @@ public class Main extends Application {
             Tile t = (Tile) n;
             t.resetBorder();
             pressedTiles.clear();
+            word = new StringBuilder();
         }
     }
 
@@ -102,13 +115,12 @@ public class Main extends Application {
            System.out.println(x1+" "+x2+" "+y1+" "+y2);
 
            if(x1 == x2 && (y1+1 == y2 || y1-1 == y2)) { //same x-coordinate
-               System.out.println("On on!");
                value = true;
            } else if(y1 == y2 && (x1+1 == x2 || x1-1 == x2)) { //same y-coordinate
-               System.out.println("On on!");
                value = true;
            } else {
-               System.out.println("Ei ole!");
+               reset();
+               System.out.println("Väärä valinta, lauta resetoidaan");
                value = false;
            }
         }
@@ -161,7 +173,8 @@ public class Main extends Application {
                 border.setFill(Color.LIGHTBLUE);
                 pressedTiles.add(t);
                 if(checkAdjacency()) {
-                    // lisätään letteri sanaan jos tsekki ok
+                    word.append(t.getDice().getValue());
+                    System.out.println(word);
                 }
             } else {
                 border.setFill(Color.WHITE);
