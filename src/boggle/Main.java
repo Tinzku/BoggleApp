@@ -152,7 +152,6 @@ public class Main extends Application {
             pressedTiles.clear();
             word = new StringBuilder();
         }
-        scoreLabel.setText("0");
     }
 
     // New Game
@@ -161,7 +160,7 @@ public class Main extends Application {
         reset();
         table.getItems().clear();
         score.reset();
-
+        scoreLabel.setText("0");
     }
 
     // Checks if the two letters are adjacent on the board
