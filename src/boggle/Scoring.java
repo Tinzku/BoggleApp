@@ -2,7 +2,7 @@ package boggle;
 
 public class Scoring {
 
-    private int score;
+    public int score;
 
     public Scoring() {
         score = 0;
@@ -18,7 +18,7 @@ public class Scoring {
             score += 3;
         } else if (characterCount == 5) {
             score += 2;
-        } else if (characterCount < 3) {
+        } else if (characterCount < 2) {
             System.out.println("Nothing added to the score");
         } else {
             score += 1;

@@ -1,20 +1,28 @@
 package boggle;
 
 import javafx.application.Application;
+import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
+import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
+
 import java.util.ArrayList;
 import java.util.Collections;
 
@@ -26,8 +34,11 @@ public class Main extends Application {
 
     private GridPane board;
     private ArrayList<Tile> pressedTiles = new ArrayList<>();
+    private ObservableList<Word> sanat = FXCollections.observableArrayList();
     private StringBuilder word = new StringBuilder();
     private Scoring score = new Scoring();
+    private TableView<Word> table = new TableView();
+    private Label scoreLabel = new Label();
 
     // Initializes the board tiles with dices
     private GridPane initBoard() {
@@ -45,6 +56,7 @@ public class Main extends Application {
         board.setPrefSize(300, 300);
         board.setAlignment(Pos.CENTER_LEFT);
 
+
         // Adding String values (letters) to matrix and Tiles to GridPane
         int k = 0;
         for (int i=0; i < 4; i++) {
@@ -57,24 +69,67 @@ public class Main extends Application {
         return board;
     }
 
+    private TableView createTable() {
+        // Create a table to show the words
+        table.setEditable(true);
+        TableColumn<Word, String> sanaCol = new TableColumn("Words");
+        sanaCol.setCellValueFactory(new PropertyValueFactory<Word, String>("wordToAdd"));
+        table.setColumnResizePolicy(table.CONSTRAINED_RESIZE_POLICY);
+        table.getColumns().add(sanaCol);
+        table.setTranslateX(320);
+
+        return table;
+    }
+
+    private VBox scoreLabel() {
+        Label pisteet = new Label("Score:");
+        pisteet.setFont(new Font("Arial", 30));
+        scoreLabel.setText("0");
+        scoreLabel.setFont(new Font("Arial", 32));
+        final VBox vbox = new VBox();
+        vbox.setSpacing(5);
+        vbox.setPadding(new Insets(10, 0, 0, 10));
+        vbox.getChildren().addAll(pisteet, scoreLabel);
+        vbox.setTranslateX(200);
+        vbox.setTranslateY(50);
+
+        return vbox;
+    }
+
+    // Label to show the current word that the user is trying to get
+
     // Populates the window with nodes
     private Parent createRoot() {
         Pane root = new Pane();
-        root.setPrefSize(600, 300);
+        root.setPrefSize(570, 450);
         root.getChildren().addAll(initBoard());
+        root.getChildren().addAll(createTable());
+        root.getChildren().addAll(scoreLabel());
         Button reset = new Button("Reset");
+        reset.setTranslateX(210);
+        reset.setTranslateY(180);
         Button confirm = new Button("Confirm");
+        confirm.setTranslateX(210);
+        confirm.setTranslateY(210);
+        Button newGame = new Button("New Game");
+        newGame.setTranslateX(210);
+        newGame.setTranslateY(150);
         confirm.setOnMouseClicked(event -> confirm());
         reset.setOnMouseClicked(event -> reset());
-        root.getChildren().addAll(confirm, reset);
+        newGame.setOnMouseClicked(event -> newGame());
+        root.getChildren().addAll(confirm, reset, newGame);
         return root;
     }
 
     private void confirm() {
-        //if (isWord()) {
+        //if (word.isValidWord && not already used) {
+        String w = word.toString();
+        Word addedWord = new Word(w);
+        table.getItems().add(addedWord);
             score.countScore(word);
             System.out.println(score.getScore());
-        //} Dictionary check
+        scoreLabel.setText("" + score.getScore());
+        //}
     }
 
     // Rolls dice in the start of a new round
@@ -97,6 +152,16 @@ public class Main extends Application {
             pressedTiles.clear();
             word = new StringBuilder();
         }
+        scoreLabel.setText("0");
+    }
+
+    // New Game
+    private void newGame() {
+        shuffle();
+        reset();
+        table.getItems().clear();
+        score.reset();
+
     }
 
     // Checks if the two letters are adjacent on the board
@@ -127,6 +192,15 @@ public class Main extends Application {
         return value;
     }
 
+    private void timer() {
+        /*
+        Timeline timeline = new Timeline(new KeyFrame(
+                Duration.millis(2500),
+                ae -> doSomething()));
+        timeline.play();
+        */
+    }
+
     @Override
     public void start(Stage primaryStage) throws Exception {
         //Parent root = FXMLLoader.load(getClass().getResource("gamewindow.fxml"));
@@ -139,11 +213,12 @@ public class Main extends Application {
     /**
      * Class representing a single tile on the board
      */
-    private class Tile extends StackPane {
+    public class Tile extends StackPane {
 
         private LetteredDice dice;
         private Text text;
         private Rectangle border;
+        private String letter;
 
         // Saving position data to help adjacency checking
         private Position pos;
@@ -161,6 +236,9 @@ public class Main extends Application {
             text = new Text(dice.getValue());
             text.setFont(Font.font(30));
 
+            // Letter
+            letter = dice.getValue();
+
             setAlignment(Pos.CENTER);
             getChildren().addAll(border, text);
 
@@ -172,25 +250,43 @@ public class Main extends Application {
             if (border.getFill().equals(Color.WHITE)) {
                 border.setFill(Color.LIGHTBLUE);
                 pressedTiles.add(t);
-                if(checkAdjacency()) {
+                if (checkAdjacency()) {
                     word.append(t.getDice().getValue());
                     System.out.println(word);
+
                 }
             } else {
                 border.setFill(Color.WHITE);
             }
         }
 
-        private LetteredDice getDice() { return dice; }
+        public String getLetter() {
+            return letter;
+        }
+
+        private LetteredDice getDice() {
+            return dice;
+        }
 
         // Resets the color (the state) of the tile
-        public void resetBorder() { border.setFill(Color.WHITE); }
+        public void resetBorder() {
+            border.setFill(Color.WHITE);
+        }
 
         // Updates the Text attribute of the Tile to match dice value
-        private void updateText() { text.setText(dice.getValue()); }
+        private void updateText() {
+            text.setText(dice.getValue());
+        }
 
-        private void setPos(int x, int y) { pos.setX(x); pos.setY(y); }
-        private Position getPos() { return pos; }
+        private void setPos(int x, int y) {
+            pos.setX(x);
+            pos.setY(y);
+        }
+
+        private Position getPos() {
+            return pos;
+        }
     }
+
     public static void main(String[] args) { launch(args); }
 }
