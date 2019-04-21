@@ -256,7 +256,7 @@ public class Main extends Application {
 
                 }
             } else {
-                border.setFill(Color.WHITE);
+                reset();
             }
         }
 
