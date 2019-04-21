@@ -40,6 +40,7 @@ public class Main extends Application {
     private Label warningLabel;
 
     // Game variables
+    public ArrayList<String> addedWords;
     private ArrayList<Tile> pressedTiles;
     private StringBuilder word;
     private Scoring score;
@@ -142,18 +143,25 @@ public class Main extends Application {
 
     private void confirm() {
         String w = word.toString().toLowerCase();
-        if (dictionary.contains(w)){
-            Word addedWord = new Word(w);
-            table.getItems().add(addedWord);
-            score.countScore(word);
-            System.out.println(score.getScore());
-            scoreLabel.setText("" + score.getScore());
-            reset();
-            warningLabel.setText("");
+        if (!addedWords.contains(w)) {
+            if (dictionary.contains(w)) {
+                Word addedWord = new Word(w);
+                table.getItems().add(addedWord);
+                addedWords.add(w);
+                score.countScore(word);
+                System.out.println(score.getScore());
+                scoreLabel.setText("" + score.getScore());
+                reset();
+                warningLabel.setText("");
+            } else {
+                reset();
+                warningLabel.setText("Sanaa ei löytynyt sanakirjasta.");
+            }
         } else {
             reset();
-            warningLabel.setText("Sanaa ei löytynyt sanakirjasta.");
+            warningLabel.setText("Sana on jo käytetty!");
         }
+
     }
 
     // Rolls dice in the start of a new round
@@ -183,8 +191,10 @@ public class Main extends Application {
         shuffle();
         reset();
         table.getItems().clear();
+        addedWords.clear();
         score.reset();
         scoreLabel.setText("0");
+        warningLabel.setText("");
     }
 
     // Checks if the two letters are adjacent on the board
@@ -237,6 +247,7 @@ public class Main extends Application {
     @Override
     public void init() {
         pressedTiles = new ArrayList<>();
+        addedWords = new ArrayList<>();
         word = new StringBuilder();
         score = new Scoring();
         try {
