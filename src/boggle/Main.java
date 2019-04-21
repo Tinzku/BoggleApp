@@ -167,20 +167,21 @@ public class Main extends Application {
     private boolean checkAdjacency() {
         boolean value = false;
         int size = pressedTiles.size();
-        if(size <= 1) {
+        if (size <= 1) {
             System.out.println("Ei tarvi vielä tsekkailla");
             value = true;
         } else {
-            // getgetget
            int x1 = pressedTiles.get(size-2).getPos().getX();
            int y1 = pressedTiles.get(size-2).getPos().getY();
            int x2 = pressedTiles.get(size-1).getPos().getX();
            int y2 = pressedTiles.get(size-1).getPos().getY();
            System.out.println(x1+" "+x2+" "+y1+" "+y2);
 
-           if(x1 == x2 && (y1+1 == y2 || y1-1 == y2)) { //same x-coordinate
+           if (x1 == x2 && (y1+1 == y2 || y1-1 == y2)) { //same x-coordinate
                value = true;
-           } else if(y1 == y2 && (x1+1 == x2 || x1-1 == x2)) { //same y-coordinate
+           } else if (y1 == y2 && (x1+1 == x2 || x1-1 == x2)) { //same y-coordinate
+               value = true;
+           } else if (Math.abs(x1 - x2) == 1 && Math.abs(y1 - y2) == 1){ // diagonal check
                value = true;
            } else {
                reset();
