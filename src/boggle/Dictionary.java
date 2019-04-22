@@ -12,6 +12,11 @@ public class Dictionary {
 
     private Set<String> wordsSet;
 
+    /**
+     * Scans the "dict.txt" file and creates a dictionary (wordsSet) from it
+     *
+     * @throws IOException
+     */
     public Dictionary() throws IOException {
         Path path = Paths.get("dict.txt");
         byte[] readBytes = Files.readAllBytes(path);
@@ -21,6 +26,11 @@ public class Dictionary {
         Collections.addAll(wordsSet, words);
     }
 
+    /**
+     * Boolean to check if the word is in the dictionary
+     * @param word
+     * @return
+     */
     public boolean contains(String word) {
         return wordsSet.contains(word);
     }

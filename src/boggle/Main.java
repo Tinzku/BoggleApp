@@ -21,15 +21,9 @@ import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
-
-import javax.swing.text.StyledEditorKit;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
-
-//TODO: Implement game logic and structure
-//TODO: Implement Dictionary
-//TODO: Implement Timer
 
 public class Main extends Application {
 
@@ -46,7 +40,9 @@ public class Main extends Application {
     private Scoring score;
     private Dictionary dictionary;
 
-    // Initializes the board tiles with dices
+    /**
+     * Initializes the board tiles with dice
+     */
     private GridPane initBoard() {
 
         // Creating tiles with dices
@@ -74,35 +70,43 @@ public class Main extends Application {
         return board;
     }
 
+
+    /**
+     * Creates a new TableView object "table" that shows the words that the user has tried
+     */
     private TableView createTable() {
-        // Create a table to show the words
         table = new TableView<>();
         table.setEditable(true);
         TableColumn<Word, String> sanaCol = new TableColumn("Words");
-        sanaCol.setCellValueFactory(new PropertyValueFactory<Word, String>("wordToAdd"));
-        table.setColumnResizePolicy(table.CONSTRAINED_RESIZE_POLICY);
+        sanaCol.setCellValueFactory(new PropertyValueFactory<Word, String>("wordToAdd")); // Cells have correct value
+        table.setColumnResizePolicy(table.CONSTRAINED_RESIZE_POLICY); // The "Words" -column takes up the whole space
         table.getColumns().add(sanaCol);
         table.setTranslateX(320);
         return table;
     }
 
-    // Label to show the current word that the user is trying to get
+    /**
+     * Label to show the score
+     */
     private VBox createScoreLabel() {
         Label pisteet = new Label("Score:");
         pisteet.setFont(new Font("Arial", 30));
         scoreLabel = new Label();
         scoreLabel.setText("0");
         scoreLabel.setFont(new Font("Arial", 32));
-        final VBox vbox = new VBox();
+        final VBox vbox = new VBox(); // Place the labels in a VBox
         vbox.setSpacing(5);
-        vbox.setPadding(new Insets(10, 0, 0, 10));
+        vbox.setPadding(new Insets(10, 0, 0, 10));  // Set padding
         vbox.getChildren().addAll(pisteet, scoreLabel);
         vbox.setTranslateX(200);
         vbox.setTranslateY(50);
-        return vbox;
+        return vbox; // Return the VBox
     }
 
-    private VBox createWarningLabel() { ;
+    /**
+     * Label to show some warnings, for example "word is already added" and "word is not found in the dictionary"
+     */
+    private VBox createWarningLabel() {
         warningLabel = new Label();
         warningLabel.setText("");
         warningLabel.setTextFill(Color.RED);
@@ -116,55 +120,61 @@ public class Main extends Application {
         return vbox;
     }
 
-
-    // Populates the window with nodes
+    /**
+     * Populates the window with nodes
+     */
     private Parent createRoot() {
         Pane root = new Pane();
         root.setPrefSize(570, 450);
-        root.getChildren().addAll(initBoard());
+        root.getChildren().addAll(initBoard());         // Adds all the of the methods above
         root.getChildren().addAll(createTable());
         root.getChildren().addAll(createScoreLabel());
         root.getChildren().add(createWarningLabel());
-        Button reset = new Button("Reset");
+        Button reset = new Button("Reset");         // Add button "Reset"
         reset.setTranslateX(210);
         reset.setTranslateY(180);
-        Button confirm = new Button("Confirm");
+        Button confirm = new Button("Confirm");     // Add button "Confirm"
         confirm.setTranslateX(210);
         confirm.setTranslateY(210);
-        Button newGame = new Button("New Game");
+        Button newGame = new Button("New Game");    // Add button "New Game"
         newGame.setTranslateX(210);
         newGame.setTranslateY(150);
-        confirm.setOnMouseClicked(event -> confirm());
+        confirm.setOnMouseClicked(event -> confirm()); // Set the mouse clicked events for the buttons
         reset.setOnMouseClicked(event -> reset());
         newGame.setOnMouseClicked(event -> newGame());
         root.getChildren().addAll(confirm, reset, newGame);
         return root;
     }
 
+    /**
+     * The method that pressing the "Confirm" -button actives
+     */
     private void confirm() {
-        String w = word.toString().toLowerCase();
-        if (!addedWords.contains(w)) {
-            if (dictionary.contains(w)) {
-                Word addedWord = new Word(w);
-                table.getItems().add(addedWord);
-                addedWords.add(w);
-                score.countScore(word);
-                System.out.println(score.getScore());
-                scoreLabel.setText("" + score.getScore());
-                reset();
+        String w = word.toString().toLowerCase();   // Transforms the StringBuilder "Word" to string "w"
+        if (!addedWords.contains(w)) {              // If ArrayList "addedWords" doesn't contain the word that is trying to be added, add w
+            if (dictionary.contains(w)) {           // If w is in the dictionary
+                Word addedWord = new Word(w);       // Create a new Word -object
+                table.getItems().add(addedWord);    // Add the object to the table
+                addedWords.add(w);                  // Add the word to the "addedWords" ArrayList
+                score.countScore(word);             // Count the score
+                System.out.println(score.getScore());  // Print the score
+                scoreLabel.setText("" + score.getScore());  // Update label score
+                reset();                            // Reset -method and reset warning label
                 warningLabel.setText("");
-            } else {
+            } else {                                // If the word is not in the dictionary, reset the board and update warning label
                 reset();
-                warningLabel.setText("Sanaa ei löytynyt sanakirjasta.");
+                warningLabel.setText("Word was not found in the dictionary.");
             }
-        } else {
+        } else {                                    // If word is already in "addedWords" list, reset the board and show warning
             reset();
-            warningLabel.setText("Sana on jo käytetty!");
+            warningLabel.setText("Word has already been used!");
         }
 
     }
 
-    // Rolls dice in the start of a new round
+    /**
+     * Rolls dice in the start of a new game
+     */
     private void shuffle() {
         ObservableList<Node> nodes = board.getChildren();
         for (Node n: nodes) {
@@ -175,7 +185,9 @@ public class Main extends Application {
         }
     }
 
-    // Reset
+    /**
+     * Reset -method clears all pressed tiles and allows a new word to be tried
+     */
     private void reset() {
         ObservableList<Node> nodes = board.getChildren();
         for (Node n: nodes) {
@@ -186,23 +198,27 @@ public class Main extends Application {
         }
     }
 
-    // New Game
+    /**
+     * New Game
+     */
     private void newGame() {
         shuffle();
         reset();
-        table.getItems().clear();
-        addedWords.clear();
-        score.reset();
-        scoreLabel.setText("0");
+        table.getItems().clear();       // Clear table
+        addedWords.clear();             // Clear addedWords
+        score.reset();                  // Reset score
+        scoreLabel.setText("0");        // Reset labels
         warningLabel.setText("");
     }
 
-    // Checks if the two letters are adjacent on the board
+    /**
+     * Checks if the two letters are adjacent on the board
+     */
     private boolean checkAdjacency() {
         boolean value = false;
         int size = pressedTiles.size();
         if (size <= 1) {
-            System.out.println("Ei tarvi vielä tsekkailla");
+            System.out.println("No need to check yet");
             value = true;
         } else {
            int x1 = pressedTiles.get(size-2).getPos().getX();
@@ -226,15 +242,6 @@ public class Main extends Application {
         return value;
     }
 
-    private void timer() {
-        /*
-        Timeline timeline = new Timeline(new KeyFrame(
-                Duration.millis(2500),
-                ae -> doSomething()));
-        timeline.play();
-        */
-    }
-
     @Override
     public void start(Stage primaryStage) throws Exception {
         //Parent root = FXMLLoader.load(getClass().getResource("gamewindow.fxml"));
@@ -244,6 +251,9 @@ public class Main extends Application {
         primaryStage.show();
     }
 
+    /**
+     * Init() initializes some objects used for the program
+     */
     @Override
     public void init() {
         pressedTiles = new ArrayList<>();
@@ -303,7 +313,7 @@ public class Main extends Application {
 
                 }
             } else {
-                warningLabel.setText("Saman ruudun painaminen aloittaa sanan alusta.");
+                warningLabel.setText("Pressing the same tile twice resets the word.");
                 reset();
             }
         }
